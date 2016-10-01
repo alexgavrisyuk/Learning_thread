@@ -7,21 +7,34 @@
 
 std::mutex g_lock;
 
+//g_lock.lock();
+//std::this_thread::sleep_for(std::chrono::seconds(rand() % 5));
+//g_lock.unlock();
+
 std::vector<int> vec;
 int				 numberElement = 0;
+int countElement;
+int countThread;
+int countElementInVector;
 
 void Multiplication()
 {
-	//g_lock.lock();
+	g_lock.lock();
+	int _countCalculateElement = 0;
 
-	for (numberElement; numberElement < vec.size(); numberElement++)
+	for (numberElement; numberElement < vec.size(); ++numberElement)
 	{
 		vec[numberElement] *= rand() % 10 + 2;
-		//std::this_thread::sleep_for(std::chrono::seconds(rand() % 5));
-		std::cout << numberElement << "  " << vec[numberElement] << " id: " << std::this_thread::get_id() << " " << vec.size() << std::endl;
+		std::cout << numberElement << "  " << vec[numberElement] << " id: " << std::this_thread::get_id() << std::endl;
+
+		if (++_countCalculateElement == countElementInVector)
+		{
+			++numberElement;
+			break;
+		}
 	}
 
-	//g_lock.unlock();
+	g_lock.unlock();
 }
 
 int main()
@@ -33,6 +46,8 @@ int main()
 	int _countTask;
 	std::cout << "Введіть номер завдання:";
 	std::cin >> _countTask;
+
+	int countThread = 0;
 
 	switch (_countTask)
 	{
@@ -53,11 +68,27 @@ int main()
 		}
 		case 2:
 		{
-				  break;
+				  countThread = 0;
+				  std::cout << "Введіть кількість потоків: ";
+				  std::cin >> countThread;
+
+				  countElement = 0;
+				  std::cout << "Введіть кількість елементів: ";
+				  std::cin >> countElement;
+
+				  int _tempValue = 0;
+				  for (int i = 0; i < countElement; i++)
+				  {
+					  _tempValue = rand() % 100 + 2;
+					  vec.push_back(_tempValue);
+				  }
+
+			break;
 		}
 		case 3:
 		{
-				  break;
+			
+			break;
 		}
 	default:
 		break;
@@ -74,33 +105,18 @@ int main()
 
 	seconds = difftime(timer, mktime(&y2k));
 
+	countElementInVector = vec.size() / countThread;
 
-	std::thread t1(Multiplication);
-	std::thread t2(Multiplication);
-	std::thread t3(Multiplication);
-	std::thread t4(Multiplication);
-	std::thread t5(Multiplication);
-	std::thread t6(Multiplication);
-	std::thread t7(Multiplication);
-	std::thread t8(Multiplication);
-	std::thread t9(Multiplication);
-	std::thread t10(Multiplication);
-	std::thread t11(Multiplication);
-	std::thread t12(Multiplication);
-
-	t1.join();
-	t2.join();
-	t3.join();
-	t4.join();
-	t5.join();
-	t6.join();
-	t7.join();
-	t8.join();
-	t9.join();
-	t10.join();
-	t11.join();
-	t12.join();
-
+	std::vector<std::thread> _vecThread(countThread);
+	for (int i = 0; i < countThread; i++)
+	{
+		_vecThread[i] = std::thread(Multiplication);
+	}
+		
+	for (int i = 0; i < countThread; i++)
+	{
+		_vecThread[i].join();
+	}
 
 	double seconds2;
 
@@ -121,5 +137,4 @@ int main()
 	1. Реалізуйте послідовну обробку елементів вектора, наприклад, множення елементів вектора на число. Число елементів вектора задається параметром N.
 	2. Реалізуйте багатопотокову обробку елементів вектора, використовуючи поділ вектора на рівне число елементів. Число потоків задається параметром M. (підказка: можна передбачити можливість розбиття діапазону 0..(N-1) на кілька, залежно від кількості потоків М. При запуску окремого потоку як аргумент передається або «індекс потоку», який визначає область масиву, який обробляється в даному потоці, або початковий і кінцевий індекси вхідного вектора).
 	3. Виконайте аналіз ефективності багатопотокової обробки при різних параметрах N (10, 100, 1000, 100 000) і M (2, 3, 4, 5, 10). Результати подайте у табличній формі. (підказка: в якості ефективності роботи потоку можна вибрати час виконання потоком роботи).
-
 */
